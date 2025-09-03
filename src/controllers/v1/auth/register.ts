@@ -32,6 +32,10 @@ const register = async (req: Request, res: Response): Promise<void> => {
     logger.warn(
       `User with email ${email} tried to register as an admin but is not in the whitelist`,
     );
+<<<<<<< HEAD
+=======
+    return;
+>>>>>>> a524f58 (Login-Logout & User CRUD logic add successfully)
   }
 
   try {

@@ -26,3 +26,14 @@ export const generateRefreshToken = (userId: Types.ObjectId): string => {
     subject: 'refreshToken',
   });
 };
+<<<<<<< HEAD
+=======
+
+export const verifyAccessToken = (token: string) => {
+  return jwt.verify(token, config.JWT_ACCESS_SECRET);
+};
+
+export const verifyRefreshToken = (token: string) => {
+  return jwt.verify(token, config.JWT_REFRESH_SECRET);
+};
+>>>>>>> a524f58 (Login-Logout & User CRUD logic add successfully)
