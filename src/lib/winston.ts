@@ -11,34 +11,71 @@ import config from '@/config';
 const { combine, timestamp, json, errors, align, printf, colorize } =
   winston.format;
 
-// Define the transport array to hold different logging transports
+/**
+ * Define custom colors for log levels
+ */
+const levelColors: Record<string, string> = {
+  error: 'red',
+  warn: 'yellow',
+  info: 'green',
+  http: 'cyan',
+  verbose: 'blue',
+  debug: 'magenta',
+  silly: 'gray',
+};
+
+winston.addColors(levelColors);
+
+/**
+ * ANSI escape codes for timestamp coloring in console logs
+ */
+const BLUE = '\x1b[34m';
+const RESET = '\x1b[0m';
+
+/**
+ * Console log format for non-production environments
+ */
+const consoleFormat = combine(
+  colorize({ all: true }), // Colorize entire message (including metadata)
+  timestamp({ format: 'YYYY-MM-DD hh:mm:ss A' }),
+  align(),
+  printf(({ timestamp, level, message, stack, ...meta }) => {
+    const logMessage = stack || message;
+    const metaString = Object.keys(meta).length
+      ? `\n${JSON.stringify(meta, null, 2)}`
+      : '';
+    return `${BLUE}${timestamp}${RESET} [${level}]: ${logMessage}${metaString}`;
+  }),
+);
+
+/**
+ * Configure transports based on environment
+ */
 const transports: winston.transport[] = [];
 
 if (config.NODE_ENV !== 'production') {
   transports.push(
     new winston.transports.Console({
-      format: combine(
-        colorize({ all: true }), // add colors to log levels
-        timestamp({ format: 'YYYY-MM-DD hh:mm:ss A' }), // ddd timestamp to logs
-        align(), //align log messages
-        printf(({ timestamp, level, message, ...meta }) => {
-          const metaStr = Object.keys(meta).length
-            ? `\n${JSON.stringify(meta)}`
-            : '';
-
-          return `${timestamp} [${level}]: ${message}${metaStr}`;
-        }),
-      ),
+      format: consoleFormat,
+    }),
+  );
+} else {
+  // Production logs: JSON format without colors, include stack traces
+  transports.push(
+    new winston.transports.Console({
+      format: combine(timestamp(), errors({ stack: true }), json()),
     }),
   );
 }
 
-// Create a logger instance for using winston
+/**
+ * Create the Winston logger instance
+ */
 const logger = winston.createLogger({
-  level: config.LOG_LEVEL, // Set the default logging level to 'info'
-  format: combine(timestamp(), errors({ stack: true }), json()), // Use JSON formate for log the messages
+  level: config.LOG_LEVEL || 'info',
+  format: combine(timestamp(), errors({ stack: true }), json()),
   transports,
-  silent: config.NODE_ENV === 'test', // Disable logging in test enviroment
+  silent: config.NODE_ENV === 'test', // Silence logs during testing
 });
 
 export { logger };

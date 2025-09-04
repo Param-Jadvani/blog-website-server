@@ -2,33 +2,22 @@
  * Node Modules
  */
 import { Router } from 'express';
-<<<<<<< HEAD
-import { body } from 'express-validator';
-=======
 import { body, cookie } from 'express-validator';
 import argon2 from 'argon2';
->>>>>>> a524f58 (Login-Logout & User CRUD logic add successfully)
 
 /**
  * Controllers
  */
 import register from '@/controllers/v1/auth/register';
-<<<<<<< HEAD
-import validationError from '@/middlewares/validationError';
-=======
 import login from '@/controllers/v1/auth/login';
 import refreshToken from '@/controllers/v1/auth/refresh_token';
 import logout from '@/controllers/v1/auth/logout';
->>>>>>> a524f58 (Login-Logout & User CRUD logic add successfully)
 
 /**
  * Middlewares
  */
-<<<<<<< HEAD
-=======
 import validationError from '@/middlewares/validationError';
 import authenticate from '@/middlewares/authenticate';
->>>>>>> a524f58 (Login-Logout & User CRUD logic add successfully)
 
 /**
  * Models
@@ -69,8 +58,6 @@ router.post(
   register,
 );
 
-<<<<<<< HEAD
-=======
 router.post(
   '/login',
   body('email')
@@ -128,5 +115,4 @@ router.post(
 
 router.get('/logout', authenticate, logout);
 
->>>>>>> a524f58 (Login-Logout & User CRUD logic add successfully)
 export default router;

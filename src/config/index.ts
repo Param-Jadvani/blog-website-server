@@ -22,11 +22,11 @@ const config = {
   ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY as ms.StringValue,
   REFRESH_TOKEN_EXPIRY: process.env.REFRESH_TOKEN_EXPIRY as ms.StringValue,
   WHITELIST_ADMINS_MAIL: ['johndoe@gmail.com', 'doejohn@gmail.com'],
-<<<<<<< HEAD
-=======
   DEFAULT_RESPONSE_LIMIT: 20,
   DEFAULT_RESPONSE_OFFSET: 0,
->>>>>>> a524f58 (Login-Logout & User CRUD logic add successfully)
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME!,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY!,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET!,
 };
 
 export default config;

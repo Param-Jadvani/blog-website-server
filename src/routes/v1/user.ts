@@ -14,7 +14,7 @@ import authorize from '@/middlewares/authorize';
 /**
  * Controllers
  */
-import getAllUsers from '@/controllers/v1/user/get_all_user';
+import getAllUsers from '@/controllers/v1/user/get_all_users';
 import getUser from '@/controllers/v1/user/get_user';
 import deleteUser from '@/controllers/v1/user/delete_user';
 import getCurrentUser from '@/controllers/v1/user/get_current_user';

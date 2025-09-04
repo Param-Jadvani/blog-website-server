@@ -18,11 +18,7 @@ export interface IUser {
   socialLinks?: {
     website?: string;
     facebook?: string;
-<<<<<<< HEAD
-    linkdin: string;
-=======
     linkdin?: string;
->>>>>>> a524f58 (Login-Logout & User CRUD logic add successfully)
     instagram?: string;
     x?: string;
     youtube?: string;
