@@ -13,6 +13,11 @@ import {
 } from '@/lib/jwt';
 
 /**
+ * Error Module
+ */
+import { AuthError, ValidationError } from '@/lib/errors';
+
+/**
  * Repositories
  */
 import { UserRepository } from '@/repositories/v2/user.repository';
@@ -21,15 +26,15 @@ import { TokenRepository } from '@/repositories/v2/token.repository';
 /**
  * Types
  */
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 
-export class AuthService {
+class AuthService {
   private userRepo = new UserRepository();
   private tokenRepo = new TokenRepository();
 
   async register(data: { email: string; password: string; role?: string }) {
     const existing = await this.userRepo.findByEmail(data.email);
-    if (existing) throw { statusCode: 400, message: 'User already exists' };
+    if (existing) throw new ValidationError('User already exists');
 
     const user = await this.userRepo.createUser(data);
     const accessToken = generateAccessToken(user._id);
@@ -37,7 +42,6 @@ export class AuthService {
     await this.tokenRepo.saveToken(user._id, refreshToken);
 
     return {
-      message: 'User registered successfully',
       user: { username: user.username, email: user.email, role: user.role },
       accessToken,
       refreshToken,
@@ -46,17 +50,16 @@ export class AuthService {
 
   async login(data: { email: string; password: string }) {
     const user = await this.userRepo.findByEmailWithPassword(data.email);
-    if (!user) throw { statusCode: 401, message: 'Invalid credentials' };
+    if (!user) throw new AuthError('Invalid credentials');
 
     const match = await argon2.verify(user.password, data.password);
-    if (!match) throw { statusCode: 401, message: 'Invalid credentials' };
+    if (!match) throw new AuthError('Invalid credentials');
 
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
     await this.tokenRepo.saveToken(user._id, refreshToken);
 
     return {
-      message: 'Login successful',
       user: { username: user.username, email: user.email, role: user.role },
       accessToken,
       refreshToken,
@@ -64,11 +67,10 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string) {
-    if (!refreshToken) throw { statusCode: 401, message: 'No refresh token' };
+    if (!refreshToken) throw new AuthError('No refresh token');
 
     const tokenRecord = await this.tokenRepo.findByToken(refreshToken);
-    if (!tokenRecord)
-      throw { statusCode: 401, message: 'Invalid refresh token' };
+    if (!tokenRecord) throw new AuthError('Invalid refresh token');
 
     const payload = verifyRefreshToken(refreshToken) as {
       userId: Types.ObjectId;
@@ -80,3 +82,5 @@ export class AuthService {
     await this.tokenRepo.deleteToken(userId, refreshToken);
   }
 }
+
+export default AuthService;

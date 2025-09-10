@@ -6,7 +6,7 @@ import Token from '@/models/token';
 /**
  * Types
  */
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 
 export class TokenRepository {
   async saveToken(userId: Types.ObjectId, token: string) {
@@ -18,12 +18,6 @@ export class TokenRepository {
   }
 
   async deleteToken(userId: Types.ObjectId, token: string) {
-    const tokenData = await Token.findOne({ token,userId });
-    console.log('repo File', {
-      userId: userId,
-      refreshToken: token,
-      tokenData,
-    });
-    return await Token.deleteOne({ token, userId });
+    return await Token.deleteOne({ userId, token });
   }
 }

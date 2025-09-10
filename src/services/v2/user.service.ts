@@ -15,31 +15,38 @@ import { UserRepository } from '@/repositories/v2/user.repository';
 import { TokenRepository } from '@/repositories/v2/token.repository';
 
 /**
+ * Error Module
+ */
+import { NotFoundError } from '@/lib/errors';
+
+/**
  * Types
  */
-import { Types } from 'mongoose';
-import blog from '@/models/blog';
+import type { Types } from 'mongoose';
 
-export class UserService {
+class UserService {
   private userRepo = new UserRepository();
   private tokenRepo = new TokenRepository();
 
   async getCurrentUser(userId: Types.ObjectId) {
-    return await this.userRepo.findById(userId);
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+    return user;
   }
 
   async updateCurrentUser(userId: Types.ObjectId, updates: any) {
-    const user = await this.userRepo.findById(userId);
-    if (!user) throw new Error('User not found');
-
-    // TODO: apply validation logic here
-    return await this.userRepo.createUser({ ...user, ...updates });
+    const user = await this.userRepo.updateById(userId, updates);
+    if (!user) throw new NotFoundError('User not found');
+    return user;
   }
 
   async deleteCurrentUser(userId: Types.ObjectId) {
     const blogs = await Blog.find({ author: userId }).select('banner.publicId');
     const publicIds = blogs.map((b) => b.banner.publicId);
-    if (publicIds.length > 0) await cloudinary.api.delete_resources(publicIds);
+
+    if (publicIds.length > 0) {
+      await cloudinary.api.delete_resources(publicIds);
+    }
 
     await Blog.deleteMany({ author: userId });
     await this.tokenRepo.deleteToken(userId, '');
@@ -53,10 +60,14 @@ export class UserService {
   }
 
   async getUserById(userId: Types.ObjectId) {
-    return await this.userRepo.findById(userId);
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+    return user;
   }
 
   async deleteUserById(userId: Types.ObjectId) {
     return await this.userRepo.deleteById(userId);
   }
 }
+
+export default UserService;

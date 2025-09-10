@@ -6,7 +6,7 @@ import User from '@/models/user';
 /**
  * Types
  */
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 
 export class UserRepository {
   async createUser(data: any) {
@@ -27,6 +27,14 @@ export class UserRepository {
 
   async findAll(limit: number, offset: number) {
     return await User.find().select('-__v').limit(limit).skip(offset).lean();
+  }
+
+  async updateById(id: Types.ObjectId, updates: any) {
+    return await User.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+      select: '-__v',
+    }).lean();
   }
 
   async deleteById(id: Types.ObjectId) {

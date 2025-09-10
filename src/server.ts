@@ -33,6 +33,14 @@ import { connectToDatabase, disconnectFromDatabase } from '@/lib/mongoose';
 import { logger } from '@/lib/winston';
 
 /**
+<<<<<<< HEAD
+=======
+ * Middleware
+ */
+import errorHandler from '@/middlewares/global_error_handler';
+
+/**
+>>>>>>> c2b5287 (blog CRUD logic add & validation update)
  * Routes
  */
 import v2Routes from '@/routes/v2';
@@ -99,6 +107,12 @@ app.use(limiter);
     await connectToDatabase();
 
     app.use(`${config.API_BASE_PATH}/v2`, v2Routes);
+
+    /**
+     * Global Error Handler
+     * Must come AFTER all routes and middlewares
+     */
+    app.use(errorHandler);
 
     app.listen(config.PORT, () => {
       logger.info(

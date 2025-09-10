@@ -17,14 +17,16 @@ export interface ApiResponse<T> {
  */
 export function sendSuccess<T>(
   res: Response,
+  statusCode = 200,
   data: T,
   message = 'Success',
-  statusCode = 200,
 ) {
   const response: ApiResponse<T> = {
     message,
     data,
   };
+
+  if (!data) delete response.data;
   return res.status(statusCode).json(response);
 }
 

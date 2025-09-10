@@ -1,92 +1,62 @@
 /**
  * Node Modules
  */
-import { Request, Response } from 'express';
+import { Types } from 'mongoose';
 
 /**
  * Custom Modules
  */
-import { logger } from '@/lib/winston';
+import { asyncHandler } from '@/lib/async_handler';
+import { sendSuccess } from '@/lib/response';
 
 /**
  * Service
  */
-import { UserService } from '@/services/v2/user.service';
+import UserService from '@/services/v2/user.service';
 
 /**
  * Types
  */
-import { Types } from 'mongoose';
+import type { Request, Response } from 'express';
 
-export class UserController {
+class UserController {
   private userService = new UserService();
 
-  getCurrentUser = async (req: Request, res: Response) => {
-    try {
-      const user = await this.userService.getCurrentUser(req.userId!);
-      res.status(200).json({ user });
-    } catch (error: any) {
-      logger.error('UserController.getCurrentUser', error);
-      res.status(500).json({ message: error.message });
-    }
-  };
+  getCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+    const user = await this.userService.getCurrentUser(req.userId!);
+    sendSuccess(res, 200, user, 'Current user fetched successfully');
+  });
 
-  updateCurrentUser = async (req: Request, res: Response) => {
-    try {
-      const user = await this.userService.updateCurrentUser(
-        req.userId!,
-        req.body,
-      );
-      res.status(200).json({ user });
-    } catch (error: any) {
-      logger.error('UserController.updateCurrentUser', error);
-      res.status(400).json({ message: error.message });
-    }
-  };
+  updateCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+    const user = await this.userService.updateCurrentUser(
+      req.userId!,
+      req.body,
+    );
+    sendSuccess(res, 200, user, 'User updated successfully');
+  });
 
-  deleteCurrentUser = async (req: Request, res: Response) => {
-    try {
-      await this.userService.deleteCurrentUser(req.userId!);
-      res.sendStatus(204);
-    } catch (error: any) {
-      logger.error('UserController.deleteCurrentUser', error);
-      res.status(500).json({ message: error.message });
-    }
-  };
+  deleteCurrentUser = asyncHandler(async (req: Request, res: Response) => {
+    await this.userService.deleteCurrentUser(req.userId!);
+    sendSuccess(res, 200, null, 'User deleted successfully');
+  });
 
-  getAllUsers = async (req: Request, res: Response) => {
-    try {
-      const { limit = 20, offset = 0 } = req.query;
-      const result = await this.userService.getAllUsers(+limit, +offset);
-      res.status(200).json(result);
-    } catch (error: any) {
-      logger.error('UserController.getAllUsers', error);
-      res.status(500).json({ message: error.message });
-    }
-  };
+  getAllUsers = asyncHandler(async (req: Request, res: Response) => {
+    const { limit = 20, offset = 0 } = req.query;
+    const result = await this.userService.getAllUsers(+limit, +offset);
+    sendSuccess(res, 200, result, 'Users fetched successfully');
+  });
 
-  getUserById = async (req: Request, res: Response) => {
-    try {
-      const user = await this.userService.getUserById(
-        new Types.ObjectId(req.params.userId),
-      );
-      if (!user) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json({ user });
-    } catch (error: any) {
-      logger.error('UserController.getUserById', error);
-      res.status(500).json({ message: error.message });
-    }
-  };
+  getUserById = asyncHandler(async (req: Request, res: Response) => {
+    const userId = new Types.ObjectId(req.params.userId);
+    const user = await this.userService.getUserById(userId);
+    sendSuccess(res, 200, user, 'User fetched successfully');
+  });
 
-  deleteUserById = async (req: Request, res: Response) => {
-    try {
-      await this.userService.deleteUserById(
-        new Types.ObjectId(req.params.userId),
-      );
-      res.sendStatus(204);
-    } catch (error: any) {
-      logger.error('UserController.deleteUserById', error);
-      res.status(500).json({ message: error.message });
-    }
-  };
+  deleteUserById = asyncHandler(async (req: Request, res: Response) => {
+    const userId = new Types.ObjectId(req.params.userId);
+    await this.userService.deleteUserById(userId);
+    sendSuccess(res, 200, null, 'User deleted successfully');
+  });
 }
+
+export default UserController;

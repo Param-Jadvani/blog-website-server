@@ -2,19 +2,18 @@
  * Node Modules
  */
 import { Router } from 'express';
-import { body, cookie } from 'express-validator';
 
 /**
  * Controllers
  */
-import { AuthController } from '@/controllers/v2/auth.controller';
+import  AuthController from '@/controllers/v2/auth.controller';
 
 /**
  * Middlewares
  */
 import validationError from '@/middlewares/validationError';
 import authenticate from '@/middlewares/authenticate';
-
+import authValidators from '@/middlewares/validators/auth.validators';
 
 const router = Router();
 const authController = new AuthController();
@@ -24,10 +23,7 @@ const authController = new AuthController();
  */
 router.post(
   '/register',
-  body('email').isEmail().withMessage('Valid email required'),
-  body('password')
-    .isLength({ min: 8 })
-    .withMessage('Password must be at least 8 characters'),
+  authValidators.register,
   validationError,
   authController.register,
 );
@@ -37,8 +33,7 @@ router.post(
  */
 router.post(
   '/login',
-  body('email').isEmail().withMessage('Valid email required'),
-  body('password').notEmpty().withMessage('Password is required'),
+  authValidators.login,
   validationError,
   authController.login,
 );
@@ -48,7 +43,7 @@ router.post(
  */
 router.post(
   '/refresh-token',
-  cookie('refreshToken').notEmpty().withMessage('Refresh token required'),
+  authValidators.refreshToken,
   validationError,
   authController.refreshToken,
 );
