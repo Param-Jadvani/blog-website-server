@@ -3,21 +3,25 @@
  */
 import { body, cookie } from 'express-validator';
 
+const validateAuthBody = [
+  body('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required.')
+    .isLength({ max: 50 })
+    .withMessage('Email must be less than 50 character')
+    .isEmail()
+    .withMessage('Invalid email address'),
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 character long.'),
+];
+
 const authValidators = {
   register: [
-    body('email')
-      .trim()
-      .notEmpty()
-      .withMessage('Email is required.')
-      .isLength({ max: 50 })
-      .withMessage('Email must be less than 50 character')
-      .isEmail()
-      .withMessage('Invalid email address'),
-    body('password')
-      .notEmpty()
-      .withMessage('Password is required')
-      .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 character long.'),
+    ...validateAuthBody,
     body('role')
       .optional()
       .isString()
@@ -26,21 +30,7 @@ const authValidators = {
       .withMessage('Role must be either admin or user.'),
   ],
 
-  login: [
-    body('email')
-      .trim()
-      .notEmpty()
-      .withMessage('Email is required.')
-      .isLength({ max: 50 })
-      .withMessage('Email must be less than 50 character')
-      .isEmail()
-      .withMessage('Invalid email address'),
-    body('password')
-      .notEmpty()
-      .withMessage('Password is required')
-      .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 character long.'),
-  ],
+  login: [...validateAuthBody],
 
   refreshToken: [
     cookie('refreshToken')

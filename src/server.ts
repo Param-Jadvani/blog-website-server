@@ -33,14 +33,11 @@ import { connectToDatabase, disconnectFromDatabase } from '@/lib/mongoose';
 import { logger } from '@/lib/winston';
 
 /**
-<<<<<<< HEAD
-=======
  * Middleware
  */
 import errorHandler from '@/middlewares/global_error_handler';
 
 /**
->>>>>>> c2b5287 (blog CRUD logic add & validation update)
  * Routes
  */
 import v2Routes from '@/routes/v2';

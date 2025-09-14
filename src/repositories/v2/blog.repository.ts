@@ -9,7 +9,7 @@ import Blog from '@/models/blog';
 import type { IBlog } from '@/models/blog';
 import type { Types } from 'mongoose';
 
-export class BlogRepository {
+class BlogRepository {
   async create(data: Partial<IBlog>) {
     return await Blog.create(data);
   }
@@ -61,4 +61,14 @@ export class BlogRepository {
   async update(blogId: Types.ObjectId, updates: Partial<IBlog>) {
     return await Blog.findByIdAndUpdate(blogId, updates, { new: true });
   }
+
+  async deleteByUser(userId: Types.ObjectId) {
+    return await Blog.deleteMany({ author: userId });
+  }
+
+  async findUserBlogs(userId: Types.ObjectId) {
+    return await Blog.find({ author: userId }).select('banner.publicId');
+  }
 }
+
+export default BlogRepository;

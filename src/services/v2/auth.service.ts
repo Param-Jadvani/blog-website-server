@@ -11,6 +11,7 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from '@/lib/jwt';
+import ParentService from '@/services/v2/parent.service';
 
 /**
  * Error Module
@@ -18,21 +19,21 @@ import {
 import { AuthError, ValidationError } from '@/lib/errors';
 
 /**
- * Repositories
- */
-import { UserRepository } from '@/repositories/v2/user.repository';
-import { TokenRepository } from '@/repositories/v2/token.repository';
-
-/**
  * Types
  */
 import type { Types } from 'mongoose';
 
-class AuthService {
-  private userRepo = new UserRepository();
-  private tokenRepo = new TokenRepository();
+class AuthService extends ParentService {
+  constructor() {
+    super();
+  }
 
-  async register(data: { email: string; password: string; role?: string }) {
+  async register(data: {
+    email: string;
+    password: string;
+    role: string;
+    username: string;
+  }) {
     const existing = await this.userRepo.findByEmail(data.email);
     if (existing) throw new ValidationError('User already exists');
 

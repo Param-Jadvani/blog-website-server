@@ -10,6 +10,8 @@ const router = Router();
 import authRoutes from '@/routes/v2/auth';
 import userRoutes from '@/routes/v2/user';
 import blogRoutes from '@/routes/v2/blog';
+import likeRoutes from '@/routes/v2/like';
+import commentRoutes from '@/routes/v2/comment';
 
 /**
  * Root Router
@@ -27,5 +29,7 @@ router.get('/', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/blogs', blogRoutes);
+router.use('/likes', likeRoutes); 
+router.use('/comments', commentRoutes);
 
 export default router;

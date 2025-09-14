@@ -14,6 +14,7 @@ import { logger } from '@/lib/winston';
  */
 import type { Request, Response, NextFunction } from 'express';
 import type { Types } from 'mongoose';
+import { AuthError } from '@/lib/errors';
 
 /**
  * @function authenticate
@@ -57,22 +58,14 @@ const authenticate = async (
     return next();
   } catch (error) {
     // Handle expired token error
-    if (error instanceof TokenExpiredError) {
-      res.status(401).json({
-        code: 'AuthenticationError',
-        message: 'Access token expired, request a new one with refresh token',
-      });
-      return;
-    }
+    if (error instanceof TokenExpiredError) 
+      throw new AuthError('Access token expired, request a new one with refresh token');
+    
 
     // Handle invalid token error
-    if (error instanceof JsonWebTokenError) {
-      res.status(401).json({
-        code: 'AuthenticationError',
-        message: 'Access token invalid',
-      });
-      return;
-    }
+    if (error instanceof JsonWebTokenError) 
+      throw new AuthError('Access token invalid');
+    
 
     // Catch-all for other errors
     res.status(500).json({

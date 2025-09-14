@@ -4,19 +4,14 @@
 import { v2 as cloudinary } from 'cloudinary';
 
 /**
+ * Custom Modules
+ */
+import ParentService from '@/services/v2/parent.service';
+
+/**
  * Error Module
  */
 import { AuthorizationError, NotFoundError } from '@/lib/errors';
-
-/**
- * Models
- */
-import User from '@/models/user';
-
-/**
- * Repositories
- */
-import { BlogRepository } from '@/repositories/v2/blog.repository';
 
 /**
  * Types
@@ -24,15 +19,17 @@ import { BlogRepository } from '@/repositories/v2/blog.repository';
 import type { Types } from 'mongoose';
 import type { IBlog } from '@/models/blog';
 
-class BlogService {
-  private blogRepo = new BlogRepository();
+class BlogService extends ParentService {
+  constructor() {
+    super();
+  }
 
   async createBlog(userId: Types.ObjectId, data: Partial<IBlog>) {
     return await this.blogRepo.create({ ...data, author: userId });
   }
 
   async getAllBlogs(userId: Types.ObjectId, limit: number, offset: number) {
-    const user = await User.findById(userId).select('role').lean();
+    const user = await this.userRepo.findById(userId);
     const query: any = {};
 
     if (user?.role === 'user') query.status = 'published';
@@ -49,9 +46,7 @@ class BlogService {
     limit: number,
     offset: number,
   ) {
-    const currentUser = await User.findById(currentUserId)
-      .select('role')
-      .lean();
+    const currentUser = await this.userRepo.findById(currentUserId);
     const query: any = {};
 
     if (currentUser?.role === 'user') query.status = 'published';
@@ -63,7 +58,7 @@ class BlogService {
   }
 
   async getBlogBySlug(currentUserId: Types.ObjectId, slug: string) {
-    const user = await User.findById(currentUserId).select('role').lean();
+    const user = await this.userRepo.findById(currentUserId);
     const blog = await this.blogRepo.findBySlug(slug);
 
     if (!blog) throw new NotFoundError('Blog not found');
@@ -80,7 +75,7 @@ class BlogService {
     blogId: Types.ObjectId,
     updates: Partial<IBlog>,
   ) {
-    const user = await User.findById(userId).select('role').lean();
+    const user = await this.userRepo.findById(userId);
     const blog = await this.blogRepo.findById(blogId);
 
     if (!blog) throw new NotFoundError('Blog not found');
@@ -94,7 +89,7 @@ class BlogService {
   }
 
   async deleteBlog(userId: Types.ObjectId, blogId: Types.ObjectId) {
-    const user = await User.findById(userId).select('role').lean();
+    const user = await this.userRepo.findById(userId);
     const blog = await this.blogRepo.findById(blogId);
 
     if (!user) throw new NotFoundError('User not found');
@@ -108,6 +103,8 @@ class BlogService {
       await cloudinary.uploader.destroy(blog.banner.publicId);
     }
 
+    await this.likeRepo.deleteLike(userId, blogId);
+    await this.commentRepo.deleteByBlog(blogId);
     await this.blogRepo.delete(blogId);
   }
 }

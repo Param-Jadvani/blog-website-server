@@ -8,7 +8,7 @@ import Token from '@/models/token';
  */
 import type { Types } from 'mongoose';
 
-export class TokenRepository {
+class TokenRepository {
   async saveToken(userId: Types.ObjectId, token: string) {
     return await Token.create({ userId, token });
   }
@@ -20,4 +20,10 @@ export class TokenRepository {
   async deleteToken(userId: Types.ObjectId, token: string) {
     return await Token.deleteOne({ userId, token });
   }
+
+  async deleteByUser(userId: Types.ObjectId) {
+    return await Token.deleteMany({ userId });
+  }
 }
+
+export default TokenRepository;

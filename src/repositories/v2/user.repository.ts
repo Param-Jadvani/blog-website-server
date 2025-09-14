@@ -8,7 +8,7 @@ import User from '@/models/user';
  */
 import type { Types } from 'mongoose';
 
-export class UserRepository {
+class UserRepository {
   async createUser(data: any) {
     return await User.create(data);
   }
@@ -38,6 +38,8 @@ export class UserRepository {
   }
 
   async deleteById(id: Types.ObjectId) {
-    return await User.deleteOne({ _id: id });
+    return await User.deleteOne({ _id: id }).lean();
   }
 }
+
+export default UserRepository;

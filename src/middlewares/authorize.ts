@@ -9,7 +9,7 @@ import { logger } from '@/lib/winston';
 import User from '@/models/user';
 
 /**
- * Tyeps
+ * Types
  */
 import { Request, Response, NextFunction } from 'express';
 

@@ -4,15 +4,9 @@
 import { v2 as cloudinary } from 'cloudinary';
 
 /**
- * Models
+ * Custom Modules
  */
-import Blog from '@/models/blog';
-
-/**
- * Repositories
- */
-import { UserRepository } from '@/repositories/v2/user.repository';
-import { TokenRepository } from '@/repositories/v2/token.repository';
+import ParentService from '@/services/v2/parent.service';
 
 /**
  * Error Module
@@ -24,9 +18,10 @@ import { NotFoundError } from '@/lib/errors';
  */
 import type { Types } from 'mongoose';
 
-class UserService {
-  private userRepo = new UserRepository();
-  private tokenRepo = new TokenRepository();
+class UserService extends ParentService {
+  constructor() {
+    super();
+  }
 
   async getCurrentUser(userId: Types.ObjectId) {
     const user = await this.userRepo.findById(userId);
@@ -41,15 +36,17 @@ class UserService {
   }
 
   async deleteCurrentUser(userId: Types.ObjectId) {
-    const blogs = await Blog.find({ author: userId }).select('banner.publicId');
+    const blogs = await this.blogRepo.findUserBlogs(userId);
     const publicIds = blogs.map((b) => b.banner.publicId);
 
     if (publicIds.length > 0) {
       await cloudinary.api.delete_resources(publicIds);
     }
 
-    await Blog.deleteMany({ author: userId });
-    await this.tokenRepo.deleteToken(userId, '');
+    await this.blogRepo.deleteByUser(userId);
+    await this.tokenRepo.deleteByUser(userId);
+    await this.likeRepo.deleteByUser(userId);
+    await this.commentRepo.deleteByUser(userId);
     return await this.userRepo.deleteById(userId);
   }
 
@@ -66,6 +63,17 @@ class UserService {
   }
 
   async deleteUserById(userId: Types.ObjectId) {
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+
+    if (user.role === 'admin')
+      throw new NotFoundError('Cannot delete admin user');
+
+    // 3. Delete related entities
+    await this.tokenRepo.deleteByUser(userId);
+    await this.likeRepo.deleteByUser(userId);
+    await this.commentRepo.deleteByUser(userId);
+
     return await this.userRepo.deleteById(userId);
   }
 }
