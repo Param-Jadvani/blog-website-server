@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 /**
  * Generate a random username (e.g. user-abc123)
  */
@@ -29,4 +31,3 @@ export const generateSlug = (title: string): string => {
 
   return uniqueSlug;
 };
-import { randomBytes } from 'node:crypto';
