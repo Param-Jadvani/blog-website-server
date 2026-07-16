@@ -32,14 +32,18 @@ class CommentService extends ParentService {
     const blog = await this.blogRepo.findById(blogId);
     if (!blog) throw new NotFoundError('Blog not found');
 
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+    if (user.role === 'user' && blog.status !== 'published')
+      throw new AuthorizationError('You cannot comment on a draft blog');
+
     const comment = await this.commentRepo.create({
       blogId,
       userId,
       content,
     });
 
-    blog.commentsCount = (blog.commentsCount || 0) + 1;
-    await blog.save();
+    await this.blogRepo.incrementCounter(blogId, 'commentsCount');
 
     return comment;
   }
@@ -52,7 +56,12 @@ class CommentService extends ParentService {
     const comment = await this.commentRepo.findById(commentId);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    if (comment.userId.toString() !== userId.toString()) {
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+    if (
+      comment.userId.toString() !== userId.toString() &&
+      user.role !== 'admin'
+    ) {
       throw new AuthorizationError('You cannot edit this comment');
     }
 
@@ -65,22 +74,34 @@ class CommentService extends ParentService {
     const comment = await this.commentRepo.findById(commentId);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    await this.commentRepo.delete(commentId);
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+    if (
+      comment.userId.toString() !== userId.toString() &&
+      user.role !== 'admin'
+    )
+      throw new AuthorizationError('You cannot delete this comment');
 
-    const blog = await this.blogRepo.findById(comment.blogId);
-    if (blog) {
-      blog.commentsCount = Math.max(0, (blog.commentsCount || 1) - 1);
-      await blog.save();
-    }
+    await this.commentRepo.delete(commentId);
+    await this.blogRepo.incrementCounter(comment.blogId, 'commentsCount', -1);
 
     return { deleted: true };
   }
 
   async getCommentsByBlog(
+    userId: Types.ObjectId,
     blogId: Types.ObjectId,
     limit: number,
     offset: number,
   ) {
+    const blog = await this.blogRepo.findById(blogId);
+    if (!blog) throw new NotFoundError('Blog not found');
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+    if (user.role === 'user' && blog.status !== 'published')
+      throw new AuthorizationError(
+        'You cannot access comments on a draft blog',
+      );
     return await this.commentRepo.findByBlog(blogId, limit, offset);
   }
 

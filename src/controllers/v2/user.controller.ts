@@ -18,6 +18,7 @@ import UserService from '@/services/v2/user.service';
  * Types
  */
 import type { Request, Response } from 'express';
+import { matchedData } from 'express-validator';
 
 class UserController {
   private userService = new UserService();
@@ -30,7 +31,7 @@ class UserController {
   updateCurrentUser = asyncHandler(async (req: Request, res: Response) => {
     const user = await this.userService.updateCurrentUser(
       req.userId!,
-      req.body,
+      matchedData(req, { locations: ['body'] }),
     );
     sendSuccess(res, 200, user, 'User updated successfully');
   });
@@ -47,13 +48,13 @@ class UserController {
   });
 
   getUserById = asyncHandler(async (req: Request, res: Response) => {
-    const userId = new Types.ObjectId(req.params.userId);
+    const userId = new Types.ObjectId(req.params.userId as string);
     const user = await this.userService.getUserById(userId);
     sendSuccess(res, 200, user, 'User fetched successfully');
   });
 
   deleteUserById = asyncHandler(async (req: Request, res: Response) => {
-    const userId = new Types.ObjectId(req.params.userId);
+    const userId = new Types.ObjectId(req.params.userId as string);
     await this.userService.deleteUserById(userId);
     sendSuccess(res, 200, null, 'User deleted successfully');
   });

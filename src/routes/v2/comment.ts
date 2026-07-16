@@ -29,6 +29,8 @@ router
     authenticate,
     authorize(['admin', 'user']),
     commentValidators.paramId('blogId', 'Invalid blog ID'),
+    commentValidators.getByBlog,
+    validationError,
     commentController.getCommentsByBlog,
   )
   .post(
@@ -53,6 +55,7 @@ router
     authenticate,
     authorize(['admin', 'user']),
     commentValidators.paramId('commentId', 'Invalid comment ID'),
+    validationError,
     commentController.deleteComment,
   );
 

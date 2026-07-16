@@ -17,21 +17,24 @@ const userValidators = {
       .withMessage('Email must be less than 50 character')
       .isEmail()
       .withMessage('Invalid email address'),
-    body('password')
-      .optional()
-      .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 character long.'),
-    body('first_name')
+    body('firstName')
       .optional()
       .trim()
       .isLength({ max: 20 })
       .withMessage('First name must be less than 20 character'),
-    body('last_name')
+    body('lastName')
       .optional()
       .trim()
       .isLength({ max: 20 })
       .withMessage('Last name must be less than 20 character'),
-    body(['website', 'facebook', 'instagram', 'linkdin', 'x', 'youtube'])
+    body([
+      'socialLinks.website',
+      'socialLinks.facebook',
+      'socialLinks.instagram',
+      'socialLinks.linkdin',
+      'socialLinks.x',
+      'socialLinks.youtube',
+    ])
       .optional()
       .isURL()
       .withMessage('Invalid URL')

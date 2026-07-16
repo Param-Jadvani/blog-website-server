@@ -23,6 +23,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
+import type { Server } from 'node:http';
 
 /**
  * Custom Modules
@@ -51,9 +52,12 @@ import type { CorsOptions } from 'cors';
  * Express App Initial
  */
 const app = express();
+let server: Server | undefined;
+app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : false);
 
 // Configure CORS Options
 const corsOptions: CorsOptions = {
+  credentials: true,
   origin(origin, callback) {
     if (
       config.NODE_ENV === 'development' ||
@@ -105,23 +109,21 @@ app.use(limiter);
 
     app.use(`${config.API_BASE_PATH}/v2`, v2Routes);
 
+    app.use((_req, _res, next) => next(new Error('Route not found')));
+
     /**
      * Global Error Handler
      * Must come AFTER all routes and middlewares
      */
     app.use(errorHandler);
 
-    app.listen(config.PORT, () => {
-      logger.info(
-        `Server running: http://localhost:${config.PORT}${config.API_BASE_PATH}`,
-      );
+    server = app.listen(config.PORT, () => {
+      logger.info(`Server running on port ${config.PORT}`);
     });
   } catch (err) {
     logger.error('Failed to start the server', err);
 
-    if (config.NODE_ENV === 'production') {
-      process.exit(1);
-    }
+    process.exit(1);
   }
 })();
 
@@ -135,11 +137,17 @@ app.use(limiter);
  */
 const handleSeverShutDown = async () => {
   try {
+    if (server) {
+      await new Promise<void>((resolve, reject) =>
+        server!.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
     await disconnectFromDatabase();
     logger.warn('Server SHUTDOWN');
     process.exit(0);
   } catch (error) {
     logger.error('Error during server shutdown', error);
+    process.exit(1);
   }
 };
 

@@ -43,8 +43,7 @@ export const connectToDatabase = async (): Promise<void> => {
   try {
     await mongoose.connect(config.MONGO_URI, clientOptions);
 
-    logger.info('Connected to the database secessfully.', {
-      uri: config.MONGO_URI,
+    logger.info('Connected to the database successfully.', {
       options: clientOptions,
     });
   } catch (error) {
@@ -67,10 +66,7 @@ export const disconnectFromDatabase = async (): Promise<void> => {
   try {
     await mongoose.disconnect();
 
-    logger.info('Disconnected from the database secessfully.', {
-      uri: config.MONGO_URI,
-      options: clientOptions,
-    });
+    logger.info('Disconnected from the database successfully.');
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(error.message);

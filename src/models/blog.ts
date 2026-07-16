@@ -89,11 +89,12 @@ const blogSchema = new Schema<IBlog>(
     },
   },
   {
-    timestamps: {
-      createdAt: 'publishedAt',
-    },
+    timestamps: true,
   },
 );
+
+blogSchema.index({ status: 1, createdAt: -1 });
+blogSchema.index({ author: 1, createdAt: -1 });
 
 blogSchema.pre('validate', function (next) {
   if (this.title && !this.slug) {

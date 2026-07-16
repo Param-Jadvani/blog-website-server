@@ -9,6 +9,7 @@ import { Router } from 'express';
 import authenticate from '@/middlewares/authenticate';
 import authorize from '@/middlewares/authorize';
 import likeValidators from '@/middlewares/validators/like.validators';
+import validationError from '@/middlewares/validationError';
 
 /**
  * Controllers
@@ -23,6 +24,7 @@ router.post(
   authenticate,
   authorize(['admin', 'user']),
   likeValidators.validateBody,
+  validationError,
   likeController.likeBlog,
 );
 
@@ -31,6 +33,7 @@ router.delete(
   authenticate,
   authorize(['admin', 'user']),
   likeValidators.validateBody,
+  validationError,
   likeController.unLikeBlog,
 );
 

@@ -32,11 +32,22 @@ const blogValidators = {
       .optional()
       .isLength({ max: 180 })
       .withMessage('Title must be less than 180 charcters'),
-    body('content').trim(),
+    body('content')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Content cannot be empty'),
     body('status')
       .optional()
       .isIn(['draft', 'published'])
       .withMessage('Status must be one of the value, draft or published'),
+  ],
+  slug: [
+    param('slug')
+      .trim()
+      .isLength({ min: 1, max: 220 })
+      .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+      .withMessage('Invalid blog slug'),
   ],
   paramId: (paramId: string, message: string) => [
     param(paramId).notEmpty().isMongoId().withMessage(message),

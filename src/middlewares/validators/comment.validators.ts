@@ -9,8 +9,7 @@ const validateBody = [
     .notEmpty()
     .withMessage('Content is required')
     .isLength({ max: 1000 })
-    .withMessage('Content must be less than 1000 characters')
-    .escape(),
+    .withMessage('Content must be less than 1000 characters'),
 ];
 
 const commentValidators = {

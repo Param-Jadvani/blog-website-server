@@ -17,7 +17,7 @@ class BlogRepository {
   async findAll(query: any, limit: number, offset: number) {
     return await Blog.find(query)
       .select('-banner.publicId -__v')
-      .populate('author', '-createdAt -updatedAt -__v')
+      .populate('author', 'username firstName lastName socialLinks')
       .limit(limit)
       .skip(offset)
       .sort({ createdAt: -1 })
@@ -35,7 +35,7 @@ class BlogRepository {
   async findBySlug(slug: string) {
     return await Blog.findOne({ slug })
       .select('-banner.publicId -__v')
-      .populate('author', '-createdAt -updatedAt -__v')
+      .populate('author', 'username firstName lastName socialLinks')
       .lean();
   }
 
@@ -47,7 +47,7 @@ class BlogRepository {
   ) {
     return await Blog.find({ author: userId, ...query })
       .select('-banner.publicId -__v')
-      .populate('author', '-createdAt -updatedAt -__v')
+      .populate('author', 'username firstName lastName socialLinks')
       .limit(limit)
       .skip(offset)
       .sort({ createdAt: -1 })
@@ -59,7 +59,10 @@ class BlogRepository {
   }
 
   async update(blogId: Types.ObjectId, updates: Partial<IBlog>) {
-    return await Blog.findByIdAndUpdate(blogId, updates, { new: true });
+    return await Blog.findByIdAndUpdate(blogId, updates, {
+      new: true,
+      runValidators: true,
+    });
   }
 
   async deleteByUser(userId: Types.ObjectId) {
@@ -68,6 +71,18 @@ class BlogRepository {
 
   async findUserBlogs(userId: Types.ObjectId) {
     return await Blog.find({ author: userId }).select('banner.publicId');
+  }
+
+  async incrementCounter(
+    blogId: Types.ObjectId,
+    field: 'likesCount' | 'commentsCount',
+    amount: number = 1,
+  ) {
+    return await Blog.findByIdAndUpdate(
+      blogId,
+      { $inc: { [field]: amount } },
+      { new: true },
+    );
   }
 }
 

@@ -53,17 +53,20 @@ A robust and scalable RESTful API for blog management built with modern web tech
 ## ⚙️ Installation
 
 1. Clone the repository
+
 ```bash
 git clone <repository-url>
 cd blog-api
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 3. Create `.env` file
+
 ```env
 PORT=3000
 API_BASE_PATH=/api
@@ -81,6 +84,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 4. Run development server
+
 ```bash
 npm run dev
 ```
@@ -88,51 +92,57 @@ npm run dev
 ## 🔗 API Endpoints
 
 ### Base URL
+
 ```
 http://localhost:3000/api/v2
 ```
 
 ### Authentication
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/auth/register` | Register new user | No |
-| POST | `/auth/login` | User login | No |
-| POST | `/auth/refresh-token` | Refresh access token | No |
-| GET | `/auth/logout` | User logout | Yes |
+
+| Method | Endpoint              | Description          | Auth Required |
+| ------ | --------------------- | -------------------- | ------------- |
+| POST   | `/auth/register`      | Register new user    | No            |
+| POST   | `/auth/login`         | User login           | No            |
+| POST   | `/auth/refresh-token` | Refresh access token | No            |
+| GET    | `/auth/logout`        | User logout          | Yes           |
 
 ### Users
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/users/current` | Get current user | Yes |
-| PUT | `/users/current` | Update current user | Yes |
-| DELETE | `/users/current` | Delete current user | Yes |
-| GET | `/users` | Get all users | Admin |
-| GET | `/users/:userId` | Get user by ID | Admin |
-| DELETE | `/users/:userId` | Delete user | Admin |
+
+| Method | Endpoint         | Description         | Auth Required |
+| ------ | ---------------- | ------------------- | ------------- |
+| GET    | `/users/current` | Get current user    | Yes           |
+| PUT    | `/users/current` | Update current user | Yes           |
+| DELETE | `/users/current` | Delete current user | Yes           |
+| GET    | `/users`         | Get all users       | Admin         |
+| GET    | `/users/:userId` | Get user by ID      | Admin         |
+| DELETE | `/users/:userId` | Delete user         | Admin         |
 
 ### Blogs
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/blogs` | Get all blogs | Yes |
-| POST | `/blogs` | Create blog | Admin |
-| GET | `/blogs/:slug` | Get blog by slug | Yes |
-| GET | `/blogs/user/:userId` | Get user's blogs | Yes |
-| PUT | `/blogs/:blogId` | Update blog | Admin |
-| DELETE | `/blogs/:blogId` | Delete blog | Admin |
+
+| Method | Endpoint              | Description      | Auth Required |
+| ------ | --------------------- | ---------------- | ------------- |
+| GET    | `/blogs`              | Get all blogs    | Yes           |
+| POST   | `/blogs`              | Create blog      | Admin         |
+| GET    | `/blogs/:slug`        | Get blog by slug | Yes           |
+| GET    | `/blogs/user/:userId` | Get user's blogs | Yes           |
+| PUT    | `/blogs/:blogId`      | Update blog      | Admin         |
+| DELETE | `/blogs/:blogId`      | Delete blog      | Admin         |
 
 ### Comments
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/comments/blog/:blogId` | Get blog comments | Yes |
-| POST | `/comments/blog/:blogId` | Add comment | Yes |
-| PUT | `/comments/:commentId` | Update comment | Yes |
-| DELETE | `/comments/:commentId` | Delete comment | Yes |
+
+| Method | Endpoint                 | Description       | Auth Required |
+| ------ | ------------------------ | ----------------- | ------------- |
+| GET    | `/comments/blog/:blogId` | Get blog comments | Yes           |
+| POST   | `/comments/blog/:blogId` | Add comment       | Yes           |
+| PUT    | `/comments/:commentId`   | Update comment    | Yes           |
+| DELETE | `/comments/:commentId`   | Delete comment    | Yes           |
 
 ### Likes
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/likes/blog/:blogId` | Like a blog | Yes |
-| DELETE | `/likes/blog/:blogId` | Unlike a blog | Yes |
+
+| Method | Endpoint              | Description   | Auth Required |
+| ------ | --------------------- | ------------- | ------------- |
+| POST   | `/likes/blog/:blogId` | Like a blog   | Yes           |
+| DELETE | `/likes/blog/:blogId` | Unlike a blog | Yes           |
 
 ## 📁 Project Structure
 
@@ -174,4 +184,4 @@ Apache-2.0 © Param-Jadvani
 
 ---
 
-*Built with ❤️ using TypeScript and Express.js*
+_Built with ❤️ using TypeScript and Express.js_

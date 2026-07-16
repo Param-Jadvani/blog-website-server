@@ -74,13 +74,9 @@ const uploadBlogBanner =
       req.body.banner = newBanner;
 
       next();
-    } catch (error: UploadApiErrorResponse | any) {
-      res.status(error.http_code).json({
-        code: error.http_code < 500 ? 'ValidationError' : error.name,
-        message: error.message,
-      });
-
+    } catch (error: unknown) {
       logger.error('Error while uploading blog banner to cloudinary', error);
+      next(error);
     }
   };
 

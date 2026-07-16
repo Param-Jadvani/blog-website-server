@@ -38,7 +38,7 @@ const uploadToCloudinary = (
         (error, result) => {
           if (error) {
             logger.error('Error uploading image to cloudinary', error);
-            reject(error);
+            return reject(error);
           }
 
           resolve(result);

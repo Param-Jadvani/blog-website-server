@@ -28,9 +28,15 @@ export const generateRefreshToken = (userId: Types.ObjectId): string => {
 };
 
 export const verifyAccessToken = (token: string) => {
-  return jwt.verify(token, config.JWT_ACCESS_SECRET);
+  return jwt.verify(token, config.JWT_ACCESS_SECRET, {
+    algorithms: ['HS256'],
+    subject: 'accessApi',
+  });
 };
 
 export const verifyRefreshToken = (token: string) => {
-  return jwt.verify(token, config.JWT_REFRESH_SECRET);
+  return jwt.verify(token, config.JWT_REFRESH_SECRET, {
+    algorithms: ['HS256'],
+    subject: 'refreshToken',
+  });
 };

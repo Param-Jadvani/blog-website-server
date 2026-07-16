@@ -21,7 +21,7 @@ class LikeController {
   likeBlog = asyncHandler(async (req: Request, res: Response) => {
     const result = await this.likeService.likeBlog(
       req.userId!,
-      new Types.ObjectId(req.params.blogId),
+      new Types.ObjectId(req.params.blogId as string),
     );
     sendSuccess(res, 200, result, 'Blog liked successfully');
   });
@@ -29,7 +29,7 @@ class LikeController {
   unLikeBlog = asyncHandler(async (req: Request, res: Response) => {
     const result = await this.likeService.unLikeBlog(
       req.userId!,
-      new Types.ObjectId(req.params.blogId),
+      new Types.ObjectId(req.params.blogId as string),
     );
     sendSuccess(res, 200, result, 'Blog unliked successfully');
   });

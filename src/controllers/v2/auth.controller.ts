@@ -6,7 +6,8 @@ import { generateUsername } from '@/utils';
 import config from '@/config';
 import { asyncHandler } from '@/lib/async_handler';
 import { sendSuccess } from '@/lib/response';
-import { AuthorizationError } from '@/lib/errors';
+import { AuthError } from '@/lib/errors';
+import { matchedData } from 'express-validator';
 
 /**
  * Service
@@ -21,62 +22,68 @@ import type { Request, Response } from 'express';
 class AuthController {
   private authService = new AuthService();
 
+  private readonly refreshCookie = {
+    httpOnly: true,
+    secure: config.NODE_ENV === 'production',
+    sameSite: 'strict' as const,
+    signed: true,
+    maxAge: config.REFRESH_COOKIE_MAX_AGE_MS,
+    path: `${config.API_BASE_PATH}/v2/auth`,
+  };
+
   register = asyncHandler(async (req: Request, res: Response) => {
-    if (
-      req.body.role === 'admin' &&
-      !config.WHITELIST_ADMINS_MAIL.includes(req.body.email)
-    ) {
-      logger.warn(
-        `User with email ${req.body.email} tried to register as an admin but is not in the whitelist`,
-      );
-      throw new AuthorizationError('You cannot register as admin');
-    }
-
-    req.body.username = generateUsername();
-    const result = await this.authService.register(req.body);
-
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      signed: true,
+    const data = matchedData(req, { locations: ['body'] }) as {
+      email: string;
+      password: string;
+    };
+    const result = await this.authService.register({
+      ...data,
+      username: generateUsername(),
     });
 
+    res.cookie('refreshToken', result.refreshToken, this.refreshCookie);
+
     logger.info('User registered successfully', { email: result.user.email });
-    sendSuccess(res, 201, result, 'User registered successfully');
+    sendSuccess(
+      res,
+      201,
+      { user: result.user, accessToken: result.accessToken },
+      'User registered successfully',
+    );
   });
 
   login = asyncHandler(async (req: Request, res: Response) => {
-    const result = await this.authService.login(req.body);
+    const result = await this.authService.login(
+      matchedData(req, { locations: ['body'] }),
+    );
 
-    res.cookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      signed: true,
-    });
+    res.cookie('refreshToken', result.refreshToken, this.refreshCookie);
 
     logger.info('User login successful', { email: result.user.email });
-    sendSuccess(res, 200, result, 'Login successful');
+    sendSuccess(
+      res,
+      200,
+      { user: result.user, accessToken: result.accessToken },
+      'Login successful',
+    );
   });
 
   refreshToken = asyncHandler(async (req: Request, res: Response) => {
     const token = req.signedCookies.refreshToken;
+    if (!token || typeof token !== 'string')
+      throw new AuthError('No refresh token');
     const accessToken = await this.authService.refreshToken(token);
 
     sendSuccess(res, 200, { accessToken }, 'Access token refreshed');
   });
 
   logout = asyncHandler(async (req: Request, res: Response) => {
-    await this.authService.logout(req.signedCookies.refreshToken, req.userId!);
+    const token = req.signedCookies.refreshToken;
+    if (typeof token === 'string') await this.authService.logout(token);
 
-    res.clearCookie('refreshToken', {
-      signed: true,
-      httpOnly: true,
-      sameSite: 'strict',
-    });
+    res.clearCookie('refreshToken', this.refreshCookie);
 
-    logger.info('User logged out', { userId: req.userId });
+    logger.info('User logged out');
     sendSuccess(res, 200, null, 'Logout successful');
   });
 }

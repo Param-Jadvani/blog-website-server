@@ -12,6 +12,7 @@ import ParentService from '@/services/v2/parent.service';
  * Error Module
  */
 import { AuthorizationError, NotFoundError } from '@/lib/errors';
+import { sanitizeBlogContent } from '@/lib/sanitize';
 
 /**
  * Types
@@ -25,7 +26,13 @@ class BlogService extends ParentService {
   }
 
   async createBlog(userId: Types.ObjectId, data: Partial<IBlog>) {
-    return await this.blogRepo.create({ ...data, author: userId });
+    return await this.blogRepo.create({
+      title: data.title!,
+      content: sanitizeBlogContent(data.content!),
+      banner: data.banner!,
+      status: data.status || 'draft',
+      author: userId,
+    });
   }
 
   async getAllBlogs(userId: Types.ObjectId, limit: number, offset: number) {
@@ -85,7 +92,13 @@ class BlogService extends ParentService {
       throw new AuthorizationError('You cannot update this blog');
     }
 
-    return await this.blogRepo.update(blogId, updates);
+    const safeUpdates: Partial<IBlog> = {};
+    if (updates.title !== undefined) safeUpdates.title = updates.title;
+    if (updates.content !== undefined)
+      safeUpdates.content = sanitizeBlogContent(updates.content);
+    if (updates.status !== undefined) safeUpdates.status = updates.status;
+    if (updates.banner !== undefined) safeUpdates.banner = updates.banner;
+    return await this.blogRepo.update(blogId, safeUpdates);
   }
 
   async deleteBlog(userId: Types.ObjectId, blogId: Types.ObjectId) {
@@ -103,7 +116,7 @@ class BlogService extends ParentService {
       await cloudinary.uploader.destroy(blog.banner.publicId);
     }
 
-    await this.likeRepo.deleteLike(userId, blogId);
+    await this.likeRepo.deleteByBlog(blogId);
     await this.commentRepo.deleteByBlog(blogId);
     await this.blogRepo.delete(blogId);
   }

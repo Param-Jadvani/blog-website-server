@@ -28,16 +28,11 @@ class AuthService extends ParentService {
     super();
   }
 
-  async register(data: {
-    email: string;
-    password: string;
-    role: string;
-    username: string;
-  }) {
+  async register(data: { email: string; password: string; username: string }) {
     const existing = await this.userRepo.findByEmail(data.email);
     if (existing) throw new ValidationError('User already exists');
 
-    const user = await this.userRepo.createUser(data);
+    const user = await this.userRepo.createUser({ ...data, role: 'user' });
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
     await this.tokenRepo.saveToken(user._id, refreshToken);
@@ -79,8 +74,8 @@ class AuthService extends ParentService {
     return generateAccessToken(payload.userId);
   }
 
-  async logout(refreshToken: string, userId: Types.ObjectId) {
-    await this.tokenRepo.deleteToken(userId, refreshToken);
+  async logout(refreshToken: string) {
+    await this.tokenRepo.deleteToken(refreshToken);
   }
 }
 

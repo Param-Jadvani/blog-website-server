@@ -7,7 +7,6 @@ import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
  * Custom Moduels
  */
 import { verifyAccessToken } from '@/lib/jwt';
-import { logger } from '@/lib/winston';
 
 /**
  * Types
@@ -30,18 +29,14 @@ import { AuthError } from '@/lib/errors';
  */
 const authenticate = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ): Promise<void> => {
   const authHeader = req.headers.authorization;
 
   // If there's no Bearer token, respond with 401 Unauthorized.
   if (!authHeader?.startsWith('Bearer ')) {
-    res.status(401).json({
-      code: 'AuthenticationError',
-      message: 'Access denied, no token provided',
-    });
-    return;
+    throw new AuthError('Access denied, no token provided');
   }
 
   // Split out the token from the 'Bearer' prefix
@@ -58,23 +53,16 @@ const authenticate = async (
     return next();
   } catch (error) {
     // Handle expired token error
-    if (error instanceof TokenExpiredError) 
-      throw new AuthError('Access token expired, request a new one with refresh token');
-    
+    if (error instanceof TokenExpiredError)
+      throw new AuthError(
+        'Access token expired, request a new one with refresh token',
+      );
 
     // Handle invalid token error
-    if (error instanceof JsonWebTokenError) 
+    if (error instanceof JsonWebTokenError)
       throw new AuthError('Access token invalid');
-    
 
-    // Catch-all for other errors
-    res.status(500).json({
-      code: 'ServerError',
-      message: 'Internal server error',
-      error,
-    });
-
-    logger.error('Error during authentication', error);
+    throw error;
   }
 };
 

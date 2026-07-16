@@ -1,10 +1,14 @@
 {
   "name": "blog-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Production-oriented REST API for blog publishing",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon"
+    "dev": "nodemon",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",

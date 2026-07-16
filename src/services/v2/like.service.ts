@@ -7,6 +7,7 @@ import ParentService from '@/services/v2/parent.service';
  * Error Module
  */
 import { NotFoundError, AppError } from '@/lib/errors';
+import { AuthorizationError } from '@/lib/errors';
 
 /**
  * Types
@@ -21,16 +22,22 @@ class LikeService extends ParentService {
   async likeBlog(userId: Types.ObjectId, blogId: Types.ObjectId) {
     const blog = await this.blogRepo.findById(blogId);
     if (!blog) throw new NotFoundError('Blog not found');
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+    if (user.role === 'user' && blog.status !== 'published')
+      throw new AuthorizationError('You cannot like a draft blog');
 
     const existingLike = await this.likeRepo.findByUserAndBlog(userId, blogId);
     if (existingLike)
       throw new AppError('Already liked this blog', 400, 'BadRequest');
 
     await this.likeRepo.createLike(userId, blogId);
-    blog.likesCount++;
-    await blog.save();
+    const updatedBlog = await this.blogRepo.incrementCounter(
+      blogId,
+      'likesCount',
+    );
 
-    return { likesCount: blog.likesCount };
+    return { likesCount: updatedBlog?.likesCount ?? 0 };
   }
 
   async unLikeBlog(userId: Types.ObjectId, blogId: Types.ObjectId) {
@@ -39,13 +46,10 @@ class LikeService extends ParentService {
 
     await this.likeRepo.deleteLike(userId, blogId);
 
-    const blog = await this.blogRepo.findById(blogId);
+    const blog = await this.blogRepo.incrementCounter(blogId, 'likesCount', -1);
     if (!blog) throw new NotFoundError('Blog not found');
 
-    blog.likesCount = Math.max(0, blog.likesCount - 1);
-    await blog.save();
-
-    return { likesCount: blog.likesCount };
+    return { likesCount: Math.max(0, blog.likesCount) };
   }
 
   async deleteLikesByUser(userId: Types.ObjectId) {

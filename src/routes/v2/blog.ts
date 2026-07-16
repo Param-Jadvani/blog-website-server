@@ -20,6 +20,7 @@ import userValidators from '@/middlewares/validators/user.validators';
 import BlogController from '@/controllers/v2/blog.controller';
 
 const upload = multer({
+  limits: { fileSize: 2 * 1024 * 1024, files: 1, fields: 20 },
   fileFilter: (_req, file, cb) => {
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.mimetype)) {
@@ -38,6 +39,7 @@ router
     authenticate,
     authorize(['admin', 'user']),
     blogValidators.getAllBlogs,
+    validationError,
     blogController.getAllBlogs,
   )
   .post(
@@ -56,6 +58,7 @@ router.get(
   authorize(['admin', 'user']),
   userValidators.userId,
   blogValidators.getAllBlogs,
+  validationError,
   blogController.getBlogsByUser,
 );
 
@@ -63,7 +66,7 @@ router.get(
   '/:slug',
   authenticate,
   authorize(['admin', 'user']),
-  blogValidators.paramId('slug', 'Slug is required'),
+  blogValidators.slug,
   validationError,
   blogController.getBlogBySlug,
 );
@@ -74,6 +77,7 @@ router
     authenticate,
     authorize(['admin']),
     blogValidators.paramId('blogId', 'Invalid blog ID'),
+    validationError,
     upload.single('banner_image'),
     blogValidators.updateBlog,
     validationError,

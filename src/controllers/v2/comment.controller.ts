@@ -20,7 +20,7 @@ class CommentController {
   private commentService = new CommentService();
 
   createComment = asyncHandler(async (req: Request, res: Response) => {
-    const blogId = new Types.ObjectId(req.params.blogId);
+    const blogId = new Types.ObjectId(req.params.blogId as string);
     const comment = await this.commentService.createComment(
       req.userId!,
       blogId,
@@ -34,7 +34,7 @@ class CommentController {
   });
 
   updateComment = asyncHandler(async (req: Request, res: Response) => {
-    const commentId = new Types.ObjectId(req.params.commentId);
+    const commentId = new Types.ObjectId(req.params.commentId as string);
     const updated = await this.commentService.updateComment(
       req.userId!,
       commentId,
@@ -44,7 +44,7 @@ class CommentController {
   });
 
   deleteComment = asyncHandler(async (req: Request, res: Response) => {
-    const commentId = new Types.ObjectId(req.params.commentId);
+    const commentId = new Types.ObjectId(req.params.commentId as string);
     const result = await this.commentService.deleteComment(
       req.userId!,
       commentId,
@@ -53,9 +53,10 @@ class CommentController {
   });
 
   getCommentsByBlog = asyncHandler(async (req: Request, res: Response) => {
-    const blogId = new Types.ObjectId(req.params.blogId);
+    const blogId = new Types.ObjectId(req.params.blogId as string);
     const { limit = 20, offset = 0 } = req.query;
     const comments = await this.commentService.getCommentsByBlog(
+      req.userId!,
       blogId,
       +limit,
       +offset,

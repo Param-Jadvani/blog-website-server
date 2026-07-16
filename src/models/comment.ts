@@ -9,22 +9,28 @@ export interface IComment {
   content: string;
 }
 
-const commentSchema = new Schema<IComment>({
-  blogId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Blog',
-    required: true,
+const commentSchema = new Schema<IComment>(
+  {
+    blogId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Blog',
+      required: true,
+    },
+    content: {
+      type: String,
+      required: [true, 'Content is required'],
+      maxLength: [1000, 'Content must be less than 1000 characters'],
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
   },
-  content: {
-    type: String,
-    required: [true, 'Content is required'],
-    maxLength: [1000, 'Content must be less than 1000 characters'],
-  },
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-});
+  { timestamps: true },
+);
+
+commentSchema.index({ blogId: 1, createdAt: -1 });
+commentSchema.index({ userId: 1 });
 
 export default model<IComment>('Comment', commentSchema);

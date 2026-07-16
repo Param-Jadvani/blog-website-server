@@ -29,6 +29,10 @@ class UserRepository {
     return await User.find().select('-__v').limit(limit).skip(offset).lean();
   }
 
+  async count() {
+    return await User.countDocuments();
+  }
+
   async updateById(id: Types.ObjectId, updates: any) {
     return await User.findByIdAndUpdate(id, updates, {
       new: true,

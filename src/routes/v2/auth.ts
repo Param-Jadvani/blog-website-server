@@ -6,7 +6,7 @@ import { Router } from 'express';
 /**
  * Controllers
  */
-import  AuthController from '@/controllers/v2/auth.controller';
+import AuthController from '@/controllers/v2/auth.controller';
 
 /**
  * Middlewares
@@ -51,6 +51,6 @@ router.post(
 /**
  * Logout
  */
-router.get('/logout', authenticate, authController.logout);
+router.post('/logout', authController.logout);
 
 export default router;

@@ -3,7 +3,7 @@
  */
 export const generateUsername = (): string => {
   const usernamePrefix = 'user-';
-  const randomChars = Math.random().toString(36).slice(2);
+  const randomChars = randomBytes(9).toString('base64url');
 
   const username = usernamePrefix + randomChars;
 
@@ -24,8 +24,9 @@ export const generateSlug = (title: string): string => {
     .replace(/-+/g, '-') // Collapse multiple hyphens
     .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
 
-  const randomSlug = Math.random().toString(36).slice(2, 8); // 6-char suffix
+  const randomSlug = randomBytes(3).toString('hex');
   const uniqueSlug = `${slug}-${randomSlug}`;
 
   return uniqueSlug;
 };
+import { randomBytes } from 'node:crypto';

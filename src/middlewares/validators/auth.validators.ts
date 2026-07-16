@@ -1,7 +1,7 @@
 /**
  * Node Modules
  */
-import { body, cookie } from 'express-validator';
+import { body } from 'express-validator';
 
 const validateAuthBody = [
   body('email')
@@ -20,25 +20,11 @@ const validateAuthBody = [
 ];
 
 const authValidators = {
-  register: [
-    ...validateAuthBody,
-    body('role')
-      .optional()
-      .isString()
-      .withMessage('Role is required')
-      .isIn(['admin', 'user'])
-      .withMessage('Role must be either admin or user.'),
-  ],
+  register: [...validateAuthBody, body('email').toLowerCase()],
 
   login: [...validateAuthBody],
 
-  refreshToken: [
-    cookie('refreshToken')
-      .notEmpty()
-      .withMessage('Refresh token required')
-      .isJWT()
-      .withMessage('Invalid refresh token'),
-  ],
+  refreshToken: [],
 };
 
 export default authValidators;
