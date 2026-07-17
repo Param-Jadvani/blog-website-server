@@ -24,6 +24,8 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import type { Server } from 'node:http';
+import path from 'node:path';
+import { apiReference } from '@scalar/express-api-reference';
 
 /**
  * Custom Modules
@@ -37,11 +39,14 @@ import { logger } from '@/lib/winston';
  * Middleware
  */
 import errorHandler from '@/middlewares/global_error_handler';
+import requestContext from '@/middlewares/request_context';
+import requestLogger from '@/middlewares/request_logger';
 
 /**
  * Routes
  */
 import v2Routes from '@/routes/v2';
+import operationalRoutes from '@/routes/operational';
 
 /**
  * Types
@@ -54,6 +59,8 @@ import type { CorsOptions } from 'cors';
 const app = express();
 let server: Server | undefined;
 app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : false);
+app.use(requestContext);
+app.use(requestLogger);
 
 // Configure CORS Options
 const corsOptions: CorsOptions = {
@@ -98,9 +105,40 @@ app.use(
 );
 
 // Use Helmet to enhance security by setting various HTTP headers.
+// Local API documentation and the raw OpenAPI contract.
+// Scalar loads its browser bundle from jsDelivr, so its page needs this narrow CSP.
+app.get('/openapi.yaml', (_req, res) =>
+  res.sendFile(path.resolve(process.cwd(), 'docs', 'openapi.yaml')),
+);
+app.use(
+  '/docs',
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'"],
+      },
+    },
+  }),
+  apiReference({
+    spec: { url: '/openapi.yaml' },
+    pageTitle: 'Blog API Reference',
+    // Scalar enables its local "Ask AI" panel by default. This API is documented
+    // by people, so keep that third-party AI feature completely disabled.
+    agent: { disabled: true },
+  }),
+);
+
+// Helmet protects the rest of the API with its stricter default policy.
 app.use(helmet());
 
-// Apply rate limitting middleware to prevent excessive requests and anhance security.
+// Operational endpoints must stay reachable when clients are rate limited.
+app.use(operationalRoutes);
+
+// Apply rate limiting to application endpoints, not observability endpoints.
 app.use(limiter);
 
 (async () => {

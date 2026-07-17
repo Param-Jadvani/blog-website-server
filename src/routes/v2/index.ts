@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
     message: 'API is Live.',
     status: 'ok',
     version: '2.0.0',
-    docs: 'URL',
+    docs: '/docs',
     timestamp: new Date().toISOString(),
   });
 });

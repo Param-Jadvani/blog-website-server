@@ -2,6 +2,7 @@
  * Node Modules
  */
 import mongoose from 'mongoose';
+import dns from 'dns';
 
 /**
  * Custom Modules
@@ -26,6 +27,8 @@ const clientOptions: ConnectOptions = {
     deprecationErrors: true,
   },
 };
+
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
 /**
  * Establishes a connection to the MongoDB database using Mongoose.
