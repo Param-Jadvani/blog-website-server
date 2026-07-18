@@ -89,6 +89,40 @@ CLOUDINARY_API_SECRET=your_api_secret
 npm run dev
 ```
 
+## Docker and Render deployment
+
+Build and run the production image locally (provide the values from `.env` or
+your own environment file):
+
+```bash
+docker build -t blog-api .
+docker run --rm --env-file .env -p 3000:3000 blog-api
+```
+
+The image runs as the unprivileged `node` user and exposes a liveness check at
+`/health/live`. Docker Compose is intentionally not included: the API has no
+container-local dependency and should use a managed MongoDB instance through
+`MONGO_URI`.
+
+To deploy on Render, create a **Web Service** from this repository, select
+**Docker** as the runtime, and configure all values listed in `.env.example` in
+Render's environment settings (Render supplies `PORT`). Set the health-check
+path to `/health/live`.
+
+The GitHub workflow at `.github/workflows/ci-cd.yml` runs formatting,
+type-checking, tests, the TypeScript build, and a Docker build for pull requests
+and pushes to `main`. To enable production deployments:
+
+1. In Render, disable automatic deploys and copy the service's Deploy Hook URL.
+2. Add it to the GitHub repository's Actions secrets as
+   `RENDER_DEPLOY_HOOK_URL`.
+3. Optionally configure the GitHub `production` environment with required
+   reviewers for an approval gate.
+
+Only a successful `validate` job can trigger that hook, and it tells Render to
+deploy the exact commit that passed validation. Failed checks skip the deployment
+job, leaving the currently running Render release unchanged.
+
 ## 🔗 API Endpoints
 
 ### Base URL
