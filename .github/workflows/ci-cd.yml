@@ -1,0 +1,84 @@
+name: CI and Render deployment
+
+# GitHub reads this file whenever someone opens a pull request to `main`,
+# or pushes code to `main`.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# If two commits are pushed quickly, stop checking the older one and check the
+# newest one. This saves GitHub runner time. It does not stop an already-running
+# Render service.
+concurrency:
+  group: ci-cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # First job: prove the new code is safe to release.
+  validate:
+    name: Validate application and container
+    runs-on: ubuntu-latest
+
+    steps:
+      # Copy this repository onto GitHub's temporary computer.
+      - name: Get the project files
+        uses: actions/checkout@v4
+
+      # Install the same Node.js version used by the Docker image.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Download the exact package versions locked in package-lock.json.
+      - name: Install dependencies
+        run: npm ci
+
+      # Check code style, TypeScript types, and automated tests.
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      # Turn TypeScript source files into JavaScript in the dist folder.
+      - name: Build application
+        run: npm run build
+
+      # Make sure the Dockerfile can create the same production image Render uses.
+      - name: Build production container
+        run: docker build --tag blog-api:${{ github.sha }} .
+
+  deploy:
+    name: Deploy to Render
+    # This means: do not start this job until `validate` has succeeded.
+    needs: validate
+    # Never deploy a pull request. Deploy only a push to the real main branch.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Trigger Render deploy
+        env:
+          # This is a secret URL saved in GitHub Settings, not written in code.
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          # github.sha is the unique ID of the exact commit that passed checks.
+          DEPLOY_COMMIT: ${{ github.sha }}
+        run: |
+          # Stop with an error if the secret has not been configured yet.
+          test -n "$RENDER_DEPLOY_HOOK_URL"
+          separator='?'
+          if [[ "$RENDER_DEPLOY_HOOK_URL" == *\?* ]]; then separator='&'; fi
+          # Ask Render to deploy exactly DEPLOY_COMMIT, not a newer unchecked one.
+          curl --fail --show-error --silent --retry 3 --retry-all-errors \
+            --request POST "${RENDER_DEPLOY_HOOK_URL}${separator}ref=${DEPLOY_COMMIT}"

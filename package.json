@@ -1,6 +1,6 @@
 {
   "name": "blog-api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Production-oriented REST API for blog publishing",
   "main": "dist/server.js",
   "scripts": {
@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
     "test": "jest --config jest.config.cjs",
     "test:watch": "jest --watch --config jest.config.cjs",
     "test:coverage": "jest --coverage --config jest.config.cjs"
